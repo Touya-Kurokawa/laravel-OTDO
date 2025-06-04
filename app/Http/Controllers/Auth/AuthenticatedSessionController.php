@@ -28,6 +28,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        Auth::login($request->user(), $request->boolean('remember'));
+
         return redirect()->route('todos.index');
     }
 
