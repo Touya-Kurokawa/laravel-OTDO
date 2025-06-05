@@ -24,6 +24,9 @@ RUN mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cac
 # Composer install （失敗回避のため --no-scripts つけておく）
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
+# LaravelのAPP_KEY生成（500エラー対策）
+RUN php artisan key:generate
+
 # Apache設定
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
