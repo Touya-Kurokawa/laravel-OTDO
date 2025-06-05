@@ -17,12 +17,15 @@ COPY .env.production .env
 # アプリケーション全体をコピー
 COPY . .
 
+# Composer install （--no-scripts で artisan 関連の実行回避）
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
 # Laravelのstorageやbootstrap/cacheの事前作成
 RUN mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# Composer install （--no-scripts で artisan 関連の実行回避）
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+# セッションマイグレーション実行
+RUN php artisan migrate --force
 
 # Apache設定
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
