@@ -18,7 +18,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . /var/www/html
 
 WORKDIR /var/www/html
-RUN composer install --no-dev --optimize-autoloader
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
 
 # ApacheのドキュメントルートをLaravelのpublicに設定
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
