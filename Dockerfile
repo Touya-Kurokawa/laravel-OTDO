@@ -11,19 +11,20 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # 作業ディレクトリ
 WORKDIR /var/www/html
 
-# .envを先にコピー
+# .env を先に配置
 COPY .env.production .env
 
 # アプリケーション全体をコピー
 COPY . .
 
-# Composer install（エラー出るなら --no-scripts で検証してもOK）
-RUN composer install --no-dev --optimize-autoloader
+# Laravelのstorageやbootstrap/cacheの事前作成
+RUN mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+# Composer install （失敗回避のため --no-scripts つけておく）
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Apache設定
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN a2enmod rewrite
-
-# パーミッション
-RUN chown -R www-data:www-data storage bootstrap/cache
