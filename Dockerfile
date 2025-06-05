@@ -1,29 +1,31 @@
 FROM php:8.3-apache
 
-# 必要なパッケージをインストール
+# 必要なパッケージのインストール
 RUN apt-get update && apt-get install -y \
     libpq-dev \
-    zip \
-    unzip \
-    git \
-    curl \
-    libonig-dev \
-    libxml2-dev \
+    zip unzip git curl \
+    libonig-dev libxml2-dev \
     && docker-php-ext-install pdo pdo_pgsql
 
-# Composer インストール
+# Composerのインストール
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Laravelのプロジェクトを配置
-COPY . /var/www/html
-
+# 作業ディレクトリの指定
 WORKDIR /var/www/html
-RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
 
-# ApacheのドキュメントルートをLaravelのpublicに設定
+# ✅ .env.production を .env にコピー（この位置）
+COPY .env.production .env
+
+# プロジェクトファイルをコピー
+COPY . .
+
+# vendorディレクトリ生成
+RUN composer install --no-dev --optimize-autoloader
+
+# パーミッション設定
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# Apache設定
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN a2enmod rewrite
-
-# Laravelのパーミッション設定（必要であれば）
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
