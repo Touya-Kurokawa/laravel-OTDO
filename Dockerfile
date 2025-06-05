@@ -11,7 +11,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # 作業ディレクトリ
 WORKDIR /var/www/html
 
-# .env を先に配置
+# .env を先に配置（Render の .env.production を .env にする）
 COPY .env.production .env
 
 # アプリケーション全体をコピー
@@ -21,11 +21,8 @@ COPY . .
 RUN mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# Composer install （失敗回避のため --no-scripts つけておく）
+# Composer install （--no-scripts で artisan 関連の実行回避）
 RUN composer install --no-dev --optimize-autoloader --no-scripts
-
-# LaravelのAPP_KEY生成（500エラー対策）
-RUN php artisan key:generate
 
 # Apache設定
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
