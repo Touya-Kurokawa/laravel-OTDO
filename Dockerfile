@@ -17,6 +17,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Laravelのプロジェクトを配置
 COPY . /var/www/html
 
+WORKDIR /var/www/html
+RUN composer install --no-dev --optimize-autoloader
+
 # ApacheのドキュメントルートをLaravelのpublicに設定
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
